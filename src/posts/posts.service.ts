@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import CreatePostDto from './dto/create-post.dto';
 import UpdatePostDto from './dto/update-post.dto';
 import PostEntity from './post.entity';
+import { PostNotFoundException } from './exception/post-not-found.exception';
 
 @Injectable()
 export default class PostsService {
@@ -22,7 +23,7 @@ export default class PostsService {
     if (post) {
       return post;
     }
-    throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
+    throw new PostNotFoundException(id);
   }
 
   async createPost(post: CreatePostDto): Promise<PostEntity> {
