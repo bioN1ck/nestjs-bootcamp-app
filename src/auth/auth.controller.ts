@@ -1,12 +1,15 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
   HttpCode,
   Post,
   Req,
   Res,
+  SerializeOptions,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -17,6 +20,10 @@ import RequestWithUser from './interfaces/request-with-user.interface';
 import JwtAuthGuard from './guards/jwt-auth.guard';
 
 @Controller('auth')
+// @UseInterceptors(ClassSerializerInterceptor)
+@SerializeOptions({
+  strategy: 'excludeAll',
+})
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
