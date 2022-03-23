@@ -1,5 +1,15 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Transform } from 'class-transformer';
+
+import UserEntity from '../users/user.entity';
+import CategoryEntity from '../categories/category.entity';
 
 @Entity()
 class PostEntity {
@@ -20,6 +30,18 @@ class PostEntity {
   //   }
   // })
   public category?: string;
+
+  @ManyToOne(() => UserEntity, (user: UserEntity) => user.posts)
+  public author: UserEntity;
+
+  // When we use the  @ManyToMany() and  @JoinTable() decorators, TypeORM set up an additional table.
+  // This way, neither the Post nor Category table stores the data about the relationship.
+  @ManyToMany(
+    () => CategoryEntity,
+    (category: CategoryEntity) => category.posts,
+  )
+  @JoinTable()
+  public categories: CategoryEntity[];
 }
 
 export default PostEntity;

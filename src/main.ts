@@ -9,8 +9,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
   // To use class-serializer globally
-  // app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
-  app.useGlobalInterceptors(new ExcludeNullInterceptor());
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  // app.useGlobalInterceptors(new ExcludeNullInterceptor());
   app.use(cookieParser());
   await app.listen(3000);
 }

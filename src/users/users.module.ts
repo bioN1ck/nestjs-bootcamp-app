@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import AddressEntity from './address.entity';
 import UserEntity from './user.entity';
 import { UsersService } from './users.service';
 
@@ -9,7 +10,7 @@ import { UsersService } from './users.service';
 // We should register a global module only once, and the best place for that is the root module
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity, AddressEntity])],
   providers: [UsersService],
   exports: [UsersService],
 })

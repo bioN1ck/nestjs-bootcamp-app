@@ -7,7 +7,7 @@ import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
-    PassportModule.register({}), // TODO разобраться почему без этого не обойтись
+    PassportModule.register({}), // TODO разобраться почему без этого не работает @UseGuards(JwtAuthGuard)
     TypeOrmModule.forFeature([PostEntity]),
   ],
   controllers: [PostsController],

@@ -10,10 +10,12 @@ import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './posts/posts.module';
 import { UsersModule } from './users/users.module';
 import { ExceptionsLoggerFilter } from './utils/exceptions-logger.filter';
+import { CategoryModule } from './categories/category.module';
 
 @Module({
   imports: [
-    PostsModule,
+    AuthModule,
+    CategoryModule,
     ConfigModule.forRoot({
       validationSchema: Joi.object({
         POSTGRES_HOST: Joi.string().required(),
@@ -27,7 +29,7 @@ import { ExceptionsLoggerFilter } from './utils/exceptions-logger.filter';
       }),
     }),
     DatabaseModule,
-    AuthModule,
+    PostsModule,
     UsersModule,
   ],
   controllers: [AppController],
