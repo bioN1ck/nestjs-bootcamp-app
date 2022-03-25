@@ -47,7 +47,7 @@ export class AuthService {
     try {
       const user = await this.userService.getByEmail(email);
       await this.verifyPassword(plainTextPassword, user.password);
-      user.password = undefined;
+
       return user;
     } catch (error) {
       throw new HttpException(

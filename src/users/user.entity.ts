@@ -6,7 +6,7 @@ import PostEntity from '../posts/post.entity';
 @Entity()
 class UserEntity {
   @PrimaryGeneratedColumn()
-  public id: number;
+  public id?: number;
 
   @Column({ unique: true })
   // @Expose()
@@ -34,7 +34,7 @@ class UserEntity {
   public address: AddressEntity;
 
   @OneToMany(() => PostEntity, (post: PostEntity) => post.author)
-  public posts: PostEntity[];
+  public posts?: PostEntity[];
 }
 
 export default UserEntity;

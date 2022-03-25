@@ -4,7 +4,7 @@ import UserEntity from './user.entity';
 @Entity()
 class AddressEntity {
   @PrimaryGeneratedColumn()
-  public id: number;
+  public id?: number;
 
   @Column()
   public street: string;
@@ -16,7 +16,7 @@ class AddressEntity {
   public country: string;
 
   @OneToOne(() => UserEntity, (user: UserEntity) => user.address)
-  public user: UserEntity;
+  public user?: UserEntity;
 }
 
 export default AddressEntity;
