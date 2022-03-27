@@ -31,11 +31,14 @@ export class UsersService {
     imageBuffer: Buffer,
     filename: string,
   ): Promise<PublicFileEntity> {
+    const user = await this.getById(userId);
+    if (user.avatar) {
+      await this.deleteExistingAvatar(user);
+    }
     const avatar = await this.filesService.uploadPublicFile(
       imageBuffer,
       filename,
     );
-    const user = await this.getById(userId);
     await this.usersRepository.update(userId, {
       ...user,
       avatar,
@@ -45,13 +48,17 @@ export class UsersService {
 
   async deleteAvatar(userId: number): Promise<void> {
     const user = await this.getById(userId);
-    const fieldId = user.avatar?.id;
-    if (fieldId) {
-      await this.usersRepository.update(userId, {
+    await this.deleteExistingAvatar(user);
+  }
+
+  async deleteExistingAvatar(user: UserEntity) {
+    const fileId = user.avatar?.id;
+    if (fileId) {
+      await this.usersRepository.update(user.id, {
         ...user,
         avatar: null,
       });
-      await this.filesService.deletePublicFile(fieldId);
+      await this.filesService.deletePublicFile(fileId);
     }
   }
 
