@@ -1,7 +1,16 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Exclude, Expose } from 'class-transformer';
+
 import AddressEntity from './address.entity';
 import PostEntity from '../posts/post.entity';
+import PublicFileEntity from '../files/public-file.entity';
 
 @Entity()
 class UserEntity {
@@ -35,6 +44,17 @@ class UserEntity {
 
   @OneToMany(() => PostEntity, (post: PostEntity) => post.author)
   public posts?: PostEntity[];
+
+  @JoinColumn()
+  @OneToOne(
+    () => PublicFileEntity,
+    // Comment for calming prettier
+    {
+      eager: true,
+      nullable: true,
+    },
+  )
+  public avatar?: PublicFileEntity;
 }
 
 export default UserEntity;

@@ -4,12 +4,15 @@ import { Repository } from 'typeorm';
 
 import UserEntity from './user.entity';
 import CreateUserDto from './dto/create-user.dto';
+import { FilesService } from '../files/files.service';
+import PublicFileEntity from '../files/public-file.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
-    private usersRepository: Repository<UserEntity>,
+    private readonly usersRepository: Repository<UserEntity>,
+    private readonly filesService: FilesService,
   ) {}
 
   async getById(id: number) {
@@ -21,6 +24,35 @@ export class UsersService {
       'User with this id does not exist',
       HttpStatus.NOT_FOUND,
     );
+  }
+
+  async addAvatar(
+    userId: number,
+    imageBuffer: Buffer,
+    filename: string,
+  ): Promise<PublicFileEntity> {
+    const avatar = await this.filesService.uploadPublicFile(
+      imageBuffer,
+      filename,
+    );
+    const user = await this.getById(userId);
+    await this.usersRepository.update(userId, {
+      ...user,
+      avatar,
+    });
+    return avatar;
+  }
+
+  async deleteAvatar(userId: number): Promise<void> {
+    const user = await this.getById(userId);
+    const fieldId = user.avatar?.id;
+    if (fieldId) {
+      await this.usersRepository.update(userId, {
+        ...user,
+        avatar: null,
+      });
+      await this.filesService.deletePublicFile(fieldId);
+    }
   }
 
   async getByEmail(email: string): Promise<UserEntity> {
