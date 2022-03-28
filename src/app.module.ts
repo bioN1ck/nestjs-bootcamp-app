@@ -32,6 +32,7 @@ import { CategoryModule } from './categories/category.module';
         S3_ACCESS_KEY_ID: Joi.string().required(),
         S3_SECRET_ACCESS_KEY: Joi.string().required(),
         S3_PUBLIC_BUCKET_NAME: Joi.string().required(),
+        S3_PRIVATE_BUCKET_NAME: Joi.string().required(),
       }),
     }),
     DatabaseModule,

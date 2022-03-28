@@ -11,6 +11,7 @@ import { Exclude, Expose } from 'class-transformer';
 import AddressEntity from './address.entity';
 import PostEntity from '../posts/post.entity';
 import PublicFileEntity from '../files/public-file.entity';
+import PrivateFileEntity from '../files/private-file.entity';
 
 @Entity()
 class UserEntity {
@@ -55,6 +56,9 @@ class UserEntity {
     },
   )
   public avatar?: PublicFileEntity;
+
+  @OneToMany(() => PrivateFileEntity, (file: PrivateFileEntity) => file.owner)
+  public files?: PrivateFileEntity[];
 }
 
 export default UserEntity;

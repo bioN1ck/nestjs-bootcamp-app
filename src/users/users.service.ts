@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -60,6 +66,34 @@ export class UsersService {
       });
       await this.filesService.deletePublicFile(fileId);
     }
+  }
+
+  async addPrivateFile(userId: number, imageBuffer: Buffer, filename: string) {
+    return this.filesService.uploadPrivateFile(imageBuffer, userId, filename);
+  }
+
+  async getPrivateFile(userId: number, fileId: number) {
+    const file = await this.filesService.getPrivateFile(fileId);
+    if (file.info.owner.id === userId) {
+      return file;
+    }
+    throw new UnauthorizedException();
+  }
+
+  async getAllPrivateFiles(userId: number) {
+    const userWithFiles = await this.usersRepository.findOne(
+      { id: userId },
+      { relations: ['files'] },
+    );
+    if (userWithFiles) {
+      return Promise.all(
+        userWithFiles.files.map(async (file) => {
+          const url = await this.filesService.generatePreSignedUrl(file.key);
+          return { ...file, url };
+        }),
+      );
+    }
+    throw new NotFoundException('User with this ID does not exist');
   }
 
   async getByEmail(email: string): Promise<UserEntity> {
