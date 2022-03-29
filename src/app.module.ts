@@ -11,6 +11,7 @@ import { PostsModule } from './posts/posts.module';
 import { UsersModule } from './users/users.module';
 import { ExceptionsLoggerFilter } from './utils/exceptions-logger.filter';
 import { CategoryModule } from './categories/category.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { CategoryModule } from './categories/category.module';
     }),
     DatabaseModule,
     PostsModule,
+    SearchModule,
     UsersModule,
   ],
   controllers: [AppController],

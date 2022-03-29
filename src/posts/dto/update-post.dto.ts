@@ -1,8 +1,9 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 class UpdatePostDto {
-  @IsNumber()
-  public id: number;
+  // Is this certainly need?
+  // @IsNumber()
+  // public id: number;
 
   @IsString()
   @IsNotEmpty()
