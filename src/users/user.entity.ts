@@ -13,7 +13,7 @@ import PostEntity from '../posts/post.entity';
 import PublicFileEntity from '../files/public-file.entity';
 import PrivateFileEntity from '../files/private-file.entity';
 
-@Entity()
+@Entity('user')
 class UserEntity {
   @PrimaryGeneratedColumn()
   public id?: number;

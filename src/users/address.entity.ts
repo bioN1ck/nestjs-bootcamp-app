@@ -1,7 +1,7 @@
 import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import UserEntity from './user.entity';
 
-@Entity()
+@Entity('address')
 class AddressEntity {
   @PrimaryGeneratedColumn()
   public id?: number;

@@ -11,7 +11,7 @@ import { Transform } from 'class-transformer';
 import UserEntity from '../users/user.entity';
 import CategoryEntity from '../categories/category.entity';
 
-@Entity()
+@Entity('post')
 class PostEntity {
   @PrimaryGeneratedColumn()
   public id: number;
