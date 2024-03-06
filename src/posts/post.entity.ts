@@ -40,7 +40,7 @@ class PostEntity {
     () => CategoryEntity,
     (category: CategoryEntity) => category.posts,
   )
-  @JoinTable()
+  @JoinTable() // Only on one side needed
   public categories: CategoryEntity[];
 }
 
