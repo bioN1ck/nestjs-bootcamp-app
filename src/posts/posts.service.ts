@@ -19,7 +19,7 @@ export default class PostsService {
 
   getAllPosts(): Promise<PostEntity[]> {
     // This return a list of the posts with the authors
-    return this.postsRepository.find({ relations: ['author'] });
+    return this.postsRepository.find({ relations: ['author', 'categories'] });
     // return this.postsRepository.find();
   }
 
