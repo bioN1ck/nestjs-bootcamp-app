@@ -36,7 +36,7 @@ export default class PostsService {
   }
 
   async createPost(post: CreatePostDto, user: UserEntity): Promise<PostEntity> {
-    const newPost = await this.postsRepository.create({
+    const newPost = this.postsRepository.create({
       ...post,
       author: user,
     });

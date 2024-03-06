@@ -118,7 +118,7 @@ export class FilesService implements OnModuleInit {
     );
     if (fileInfo) {
       // Thanks to working directly with streams, we don’t have to download the file into the memory in our server.
-      const stream = await s3
+      const stream = s3
         .getObject({
           Bucket: this.configService.get('S3_PRIVATE_BUCKET_NAME'),
           Key: fileInfo.key,
