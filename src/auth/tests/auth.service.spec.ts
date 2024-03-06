@@ -12,6 +12,8 @@ import { UsersService } from '../../users/users.service';
 import UserEntity from '../../users/user.entity';
 import { mockedConfigService } from '../../utils/mocks/config.service';
 import { mockedJwtService } from '../../utils/mocks/jwt.service';
+import { FilesService } from '../../files/files.service';
+import { mockedFilesService } from '../../utils/mocks/files.service';
 
 describe('The AuthService', () => {
   let authService: AuthService;
@@ -61,6 +63,10 @@ describe('The AuthService', () => {
         {
           provide: JwtService,
           useValue: mockedJwtService,
+        },
+        {
+          provide: FilesService,
+          useValue: mockedFilesService,
         },
         {
           provide: getRepositoryToken(UserEntity),

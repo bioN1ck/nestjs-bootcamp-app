@@ -12,6 +12,8 @@ import { mockedConfigService } from '../../utils/mocks/config.service';
 import { mockedJwtService } from '../../utils/mocks/jwt.service';
 import UserEntity from '../../users/user.entity';
 import mockedUser from './user.mock';
+import { FilesService } from '../../files/files.service';
+import { mockedFilesService } from '../../utils/mocks/files.service';
 
 jest.mock('bcrypt');
 
@@ -43,6 +45,10 @@ describe('The AuthService', () => {
         {
           provide: JwtService,
           useValue: mockedJwtService,
+        },
+        {
+          provide: FilesService,
+          useValue: mockedFilesService,
         },
         {
           provide: getRepositoryToken(UserEntity),
