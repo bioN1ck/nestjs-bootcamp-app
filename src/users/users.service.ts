@@ -34,17 +34,13 @@ export class UsersService {
 
   async addAvatar(
     userId: number,
-    imageBuffer: Buffer,
-    filename: string,
+    file: Express.Multer.File,
   ): Promise<PublicFileEntity> {
     const user = await this.getById(userId);
     if (user.avatar) {
       await this.deleteExistingAvatar(user);
     }
-    const avatar = await this.filesService.uploadPublicFile(
-      imageBuffer,
-      filename,
-    );
+    const avatar = await this.filesService.uploadPublicFile(file);
     await this.usersRepository.update(userId, {
       ...user,
       avatar,

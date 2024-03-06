@@ -46,18 +46,20 @@ export class FilesService implements OnModuleInit {
     });
   }
 
-  public async uploadPublicFile(
-    dataBuffer: Buffer,
-    filename: string,
-  ): Promise<PublicFileEntity> {
+  public async uploadPublicFile({
+    buffer,
+    filename,
+    mimetype,
+  }: Express.Multer.File): Promise<PublicFileEntity> {
     const s3 = this.createS3Instance();
     const extension = filename.split('.').reverse()[0];
     const uploadResult = await s3
       .upload({
         ACL: 'public-read',
         Bucket: this.configService.get('S3_PUBLIC_BUCKET_NAME'),
-        Body: dataBuffer,
+        Body: buffer,
         Key: `${uuid()}.${extension}`,
+        ContentType: mimetype,
       })
       .promise();
 
