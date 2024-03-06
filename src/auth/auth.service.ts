@@ -25,6 +25,7 @@ export class AuthService {
         password: hashedPassword,
       });
       createdUser.password = undefined;
+
       return createdUser;
     } catch (error) {
       if (error?.code === PostgresErrorCodeEnum.UniqueViolation) {

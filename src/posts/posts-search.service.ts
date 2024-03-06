@@ -38,6 +38,7 @@ export default class PostsSearchService {
       },
     });
     const hits = body.hits.hits;
+
     return hits.map((item) => item._source);
   }
 

@@ -68,6 +68,7 @@ export class FilesService implements OnModuleInit {
       url: uploadResult.Location,
     });
     await this.publicFileRepository.save(newFile);
+
     return newFile;
   }
 
@@ -105,6 +106,7 @@ export class FilesService implements OnModuleInit {
       },
     });
     await this.privateFileRepository.save(newFile);
+
     return newFile;
   }
 
@@ -122,6 +124,7 @@ export class FilesService implements OnModuleInit {
           Key: fileInfo.key,
         })
         .createReadStream();
+
       return {
         stream,
         info: fileInfo,

@@ -23,10 +23,11 @@ export default class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get()
-  getAllPosts(@Query('search') search: string) {
+  getPosts(@Query('search') search: string) {
     if (search) {
       return this.postsService.searchPosts(search);
     }
+
     return this.postsService.getAllPosts();
   }
 

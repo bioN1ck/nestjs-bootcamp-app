@@ -45,6 +45,7 @@ export class UsersService {
       ...user,
       avatar,
     });
+
     return avatar;
   }
 
@@ -85,6 +86,7 @@ export class UsersService {
       return Promise.all(
         userWithFiles.files.map(async (file) => {
           const url = await this.filesService.generatePreSignedUrl(file.key);
+
           return { ...file, url };
         }),
       );
@@ -106,6 +108,7 @@ export class UsersService {
   async create(userData: CreateUserDto): Promise<UserEntity> {
     const newUser = await this.usersRepository.create(userData);
     await this.usersRepository.save(newUser);
+
     return newUser;
   }
 }

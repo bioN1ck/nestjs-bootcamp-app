@@ -42,6 +42,7 @@ export default class PostsService {
     });
     await this.postsRepository.save(newPost);
     this.postsSearchService.indexPost(newPost);
+
     return newPost;
   }
 
@@ -51,6 +52,7 @@ export default class PostsService {
     if (!ids.length) {
       return [];
     }
+
     return this.postsRepository.find({
       where: { id: In(ids) },
       relations: ['author'],
@@ -66,6 +68,7 @@ export default class PostsService {
     );
     if (updatedPost) {
       await this.postsSearchService.update(updatedPost);
+
       return updatedPost;
     }
     throw new PostNotFoundException(id);

@@ -33,6 +33,7 @@ export default class CategoryService {
   async createCategory(category: CreateCategoryDto): Promise<CategoryEntity> {
     const newCategory = await this.categoryRepository.create(category);
     await this.categoryRepository.save(newCategory);
+
     return newCategory;
   }
 
