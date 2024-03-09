@@ -22,6 +22,12 @@ class UserEntity {
   // @Expose()
   public email: string;
 
+  @Column({
+    nullable: true,
+  })
+  @Exclude()
+  public currentHashedRefreshToken?: string;
+
   @Column()
   // @Expose()
   public name: string;
