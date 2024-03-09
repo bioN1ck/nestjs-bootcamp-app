@@ -4,7 +4,7 @@ import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { config } from 'aws-sdk';
 
 import { AppModule } from './app.module';
-import { ExcludeNullInterceptor } from './utils/exclude-null.interceptor';
+// import { ExcludeNullInterceptor } from './utils/exclude-null.interceptor';
 import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {

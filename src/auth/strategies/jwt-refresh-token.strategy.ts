@@ -16,8 +16,14 @@ interface RequestWithCookieRefreshToken extends Request {
 }
 
 @Injectable()
-export class JwtRefreshTokenStrategy extends PassportStrategy(Strategy, 'jwt-refresh-token') {
-  constructor(readonly configService: ConfigService, private readonly usersService: UsersService) {
+export class JwtRefreshTokenStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-refresh-token',
+) {
+  constructor(
+    readonly configService: ConfigService,
+    private readonly usersService: UsersService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: RequestWithCookieRefreshToken) => request?.cookies?.Refresh,
@@ -33,6 +39,9 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(Strategy, 'jwt-ref
   ): Promise<UserEntity> {
     const refreshToken = request?.cookies?.Refresh;
 
-    return this.usersService.getUserIfRefreshTokenMatches(refreshToken, payload.userId);
+    return this.usersService.getUserIfRefreshTokenMatches(
+      refreshToken,
+      payload.userId,
+    );
   }
 }
