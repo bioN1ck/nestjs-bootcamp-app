@@ -38,6 +38,7 @@ export default class PostsSearchService {
       },
     });
     const hits = body.hits.hits;
+
     return hits.map((item) => item._source);
   }
 
@@ -48,6 +49,9 @@ export default class PostsSearchService {
       content: post.content,
       authorId: post.author.id,
     };
+    // We need to write a script that updates all the necessary fields
+    // For example, to update the title and the content, we need:
+    // ctx._source.title='New title'; ctx._source.content= 'New content';
     const script = Object.entries(newBody).reduce((result, [key, value]) => {
       return `${result} ctx._source.${key}='${value}';`;
     }, '');

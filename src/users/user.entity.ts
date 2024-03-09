@@ -6,14 +6,17 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Exclude, Expose } from 'class-transformer';
+import {
+  Exclude,
+  // Expose,
+} from 'class-transformer';
 
 import AddressEntity from './address.entity';
 import PostEntity from '../posts/post.entity';
 import PublicFileEntity from '../files/public-file.entity';
 import PrivateFileEntity from '../files/private-file.entity';
 
-@Entity()
+@Entity('user')
 class UserEntity {
   @PrimaryGeneratedColumn()
   public id?: number;
@@ -21,6 +24,12 @@ class UserEntity {
   @Column({ unique: true })
   // @Expose()
   public email: string;
+
+  @Column({
+    nullable: true,
+  })
+  @Exclude()
+  public currentHashedRefreshToken?: string;
 
   @Column()
   // @Expose()

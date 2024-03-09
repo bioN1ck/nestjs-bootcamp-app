@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import PostEntity from '../posts/post.entity';
 
-@Entity()
+@Entity('category')
 class CategoryEntity {
   @PrimaryGeneratedColumn()
   public id: number;

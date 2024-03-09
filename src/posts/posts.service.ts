@@ -19,7 +19,7 @@ export default class PostsService {
 
   getAllPosts(): Promise<PostEntity[]> {
     // This return a list of the posts with the authors
-    return this.postsRepository.find({ relations: ['author'] });
+    return this.postsRepository.find({ relations: ['author', 'categories'] });
     // return this.postsRepository.find();
   }
 
@@ -36,12 +36,13 @@ export default class PostsService {
   }
 
   async createPost(post: CreatePostDto, user: UserEntity): Promise<PostEntity> {
-    const newPost = await this.postsRepository.create({
+    const newPost = this.postsRepository.create({
       ...post,
       author: user,
     });
     await this.postsRepository.save(newPost);
     this.postsSearchService.indexPost(newPost);
+
     return newPost;
   }
 
@@ -51,6 +52,7 @@ export default class PostsService {
     if (!ids.length) {
       return [];
     }
+
     return this.postsRepository.find({
       where: { id: In(ids) },
       relations: ['author'],
@@ -66,6 +68,7 @@ export default class PostsService {
     );
     if (updatedPost) {
       await this.postsSearchService.update(updatedPost);
+
       return updatedPost;
     }
     throw new PostNotFoundException(id);

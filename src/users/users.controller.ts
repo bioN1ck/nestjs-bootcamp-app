@@ -29,11 +29,11 @@ export class UsersController {
   @UseInterceptors(FileInterceptor('file'))
   async addAvatar(
     @Req() { user }: RequestWithUser,
-    @UploadedFile() { buffer, originalname }: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File,
   ) {
     // The file above has quite a few useful properties such as the mimetype.
     // You can use it if you want some additional validation and disallow certain types of files
-    return this.usersService.addAvatar(user.id, buffer, originalname);
+    return this.usersService.addAvatar(user.id, file);
   }
 
   @Delete('avatar')

@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { UsersService } from '../users.service';
 import UserEntity from '../user.entity';
+import { FilesService } from '../../files/files.service';
 
 describe('The UsersService', () => {
   let usersService: UsersService;
@@ -16,6 +17,10 @@ describe('The UsersService', () => {
         {
           provide: getRepositoryToken(UserEntity),
           useValue: { findOne },
+        },
+        {
+          provide: FilesService,
+          useValue: {},
         },
       ],
     }).compile();

@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
+@Entity('public_file')
 class PublicFileEntity {
   @PrimaryGeneratedColumn()
   public id: number;

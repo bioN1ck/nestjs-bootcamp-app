@@ -6,12 +6,12 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Transform } from 'class-transformer';
+// import { Transform } from 'class-transformer';
 
 import UserEntity from '../users/user.entity';
 import CategoryEntity from '../categories/category.entity';
 
-@Entity()
+@Entity('post')
 class PostEntity {
   @PrimaryGeneratedColumn()
   public id: number;
@@ -40,7 +40,7 @@ class PostEntity {
     () => CategoryEntity,
     (category: CategoryEntity) => category.posts,
   )
-  @JoinTable()
+  @JoinTable() // Only on one side needed
   public categories: CategoryEntity[];
 }
 

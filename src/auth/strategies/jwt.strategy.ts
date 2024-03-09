@@ -8,19 +8,26 @@ import { UsersService } from '../../users/users.service';
 import { TokenPayload } from '../interfaces/token-payload.interface';
 import UserEntity from '../../users/user.entity';
 
+interface RequestWithCookieAuthToken extends Request {
+  request?: {
+    cookies?: {
+      Refresh: string;
+    };
+  };
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    private readonly configService: ConfigService,
+    readonly configService: ConfigService,
     private readonly userService: UsersService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (request: Request) => {
-          return request?.cookies?.Authentication;
-        },
+        (request: RequestWithCookieAuthToken) =>
+          request?.cookies?.Authentication,
       ]),
-      secretOrKey: configService.get('JWT_SECRET'),
+      secretOrKey: configService.get('JWT_ACCESS_TOKEN_SECRET'),
     });
   }
 

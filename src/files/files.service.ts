@@ -46,18 +46,20 @@ export class FilesService implements OnModuleInit {
     });
   }
 
-  public async uploadPublicFile(
-    dataBuffer: Buffer,
-    filename: string,
-  ): Promise<PublicFileEntity> {
+  public async uploadPublicFile({
+    buffer,
+    filename,
+    mimetype,
+  }: Express.Multer.File): Promise<PublicFileEntity> {
     const s3 = this.createS3Instance();
     const extension = filename.split('.').reverse()[0];
     const uploadResult = await s3
       .upload({
         ACL: 'public-read',
         Bucket: this.configService.get('S3_PUBLIC_BUCKET_NAME'),
-        Body: dataBuffer,
+        Body: buffer,
         Key: `${uuid()}.${extension}`,
+        ContentType: mimetype,
       })
       .promise();
 
@@ -66,6 +68,7 @@ export class FilesService implements OnModuleInit {
       url: uploadResult.Location,
     });
     await this.publicFileRepository.save(newFile);
+
     return newFile;
   }
 
@@ -103,6 +106,7 @@ export class FilesService implements OnModuleInit {
       },
     });
     await this.privateFileRepository.save(newFile);
+
     return newFile;
   }
 
@@ -114,12 +118,13 @@ export class FilesService implements OnModuleInit {
     );
     if (fileInfo) {
       // Thanks to working directly with streams, we don’t have to download the file into the memory in our server.
-      const stream = await s3
+      const stream = s3
         .getObject({
           Bucket: this.configService.get('S3_PRIVATE_BUCKET_NAME'),
           Key: fileInfo.key,
         })
         .createReadStream();
+
       return {
         stream,
         info: fileInfo,

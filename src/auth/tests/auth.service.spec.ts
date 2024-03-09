@@ -1,10 +1,10 @@
 // https://wanago.io/2020/07/06/api-nestjs-unit-tests/
 
-import { Repository } from 'typeorm';
+// import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
-import * as Joi from 'joi';
+// import * as Joi from 'joi';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { AuthService } from '../auth.service';
@@ -12,6 +12,8 @@ import { UsersService } from '../../users/users.service';
 import UserEntity from '../../users/user.entity';
 import { mockedConfigService } from '../../utils/mocks/config.service';
 import { mockedJwtService } from '../../utils/mocks/jwt.service';
+import { FilesService } from '../../files/files.service';
+import { mockedFilesService } from '../../utils/mocks/files.service';
 
 describe('The AuthService', () => {
   let authService: AuthService;
@@ -63,6 +65,10 @@ describe('The AuthService', () => {
           useValue: mockedJwtService,
         },
         {
+          provide: FilesService,
+          useValue: mockedFilesService,
+        },
+        {
           provide: getRepositoryToken(UserEntity),
           useValue: {},
         },
@@ -75,7 +81,7 @@ describe('The AuthService', () => {
   describe('when creating a cookie', () => {
     it('should return a string', () => {
       const userId = 1;
-      expect(typeof authService.getCookieWithJwtToken(userId)).toEqual(
+      expect(typeof authService.getCookieWithJwtAccessToken(userId)).toEqual(
         'string',
       );
     });
