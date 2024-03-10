@@ -14,16 +14,15 @@ export default class CategoryService {
     private categoryRepository: Repository<CategoryEntity>,
   ) {}
 
-  getAllCategories(): Promise<CategoryEntity[]> {
-    return this.categoryRepository.find({ relations: ['posts'] });
+  async getAllCategories(): Promise<CategoryEntity[]> {
+    return this.categoryRepository.find({ relations: { posts: true } });
   }
 
   async getCategoryById(id: number): Promise<CategoryEntity> {
-    const category = await this.categoryRepository.findOne(
-      id,
-      // Some comment for fix prettier alarms
-      { relations: ['posts'] },
-    );
+    const category = await this.categoryRepository.findOne({
+      where: { id },
+      relations: { posts: true },
+    });
     if (category) {
       return category;
     }
@@ -42,11 +41,10 @@ export default class CategoryService {
     category: UpdateCategoryDto,
   ): Promise<CategoryEntity> {
     await this.categoryRepository.update(id, category);
-    const updateCategory = await this.categoryRepository.findOne(
-      id,
-      // For categories with their posts
-      { relations: ['posts'] },
-    );
+    const updateCategory = await this.categoryRepository.findOne({
+      where: { id },
+      relations: { posts: true }, // For categories with their posts
+    });
     if (updateCategory) {
       return updateCategory;
     }

@@ -73,7 +73,9 @@ export class FilesService implements OnModuleInit {
   }
 
   public async deletePublicFile(fileId: number) {
-    const file = await this.publicFileRepository.findOne({ id: fileId });
+    const file = await this.publicFileRepository.findOne({
+      where: { id: fileId },
+    });
     const s3 = this.createS3Instance();
     await s3
       .deleteObject({
@@ -112,10 +114,10 @@ export class FilesService implements OnModuleInit {
 
   public async getPrivateFile(fileId: number) {
     const s3 = this.createS3Instance();
-    const fileInfo = await this.privateFileRepository.findOne(
-      { id: fileId },
-      { relations: ['owner'] },
-    );
+    const fileInfo = await this.privateFileRepository.findOne({
+      where: { id: fileId },
+      relations: { owner: true },
+    });
     if (fileInfo) {
       // Thanks to working directly with streams, we don’t have to download the file into the memory in our server.
       const stream = s3
