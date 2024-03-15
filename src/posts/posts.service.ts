@@ -24,11 +24,10 @@ export default class PostsService {
   }
 
   async getPostById(id: number): Promise<PostEntity> {
-    const post = await this.postsRepository.findOne(
-      id,
-      // This return the post with the author
-      { relations: ['author'] },
-    );
+    const post = await this.postsRepository.findOne({
+      where: { id },
+      relations: { author: true },
+    });
     if (post) {
       return post;
     }
@@ -61,11 +60,11 @@ export default class PostsService {
 
   async updatePost(id: number, post: UpdatePostDto): Promise<PostEntity> {
     await this.postsRepository.update(id, post);
-    const updatedPost = await this.postsRepository.findOne(
-      id,
+    const updatedPost = await this.postsRepository.findOne({
+      where: { id },
       // This return the updated post with the author
-      { relations: ['author'] },
-    );
+      relations: { author: true },
+    });
     if (updatedPost) {
       await this.postsSearchService.update(updatedPost);
 
