@@ -5,13 +5,16 @@ import { Repository } from 'typeorm';
 import CategoryEntity from './category.entity';
 import CategoryNotFoundException from './exceptions/category-not-found.exception';
 import CreateCategoryDto from './dto/create-category.dto';
+import PostEntity from '../posts/post.entity';
 import UpdateCategoryDto from './dto/update-category.dto';
 
 @Injectable()
 export default class CategoryService {
   constructor(
     @InjectRepository(CategoryEntity)
-    private categoryRepository: Repository<CategoryEntity>,
+    private readonly categoryRepository: Repository<CategoryEntity>,
+    @InjectRepository(PostEntity)
+    private readonly postsRepository: Repository<PostEntity>,
   ) {}
 
   async getAllCategories(): Promise<CategoryEntity[]> {
@@ -23,14 +26,15 @@ export default class CategoryService {
       where: { id },
       relations: { posts: true },
     });
-    if (category) {
-      return category;
+    if (!category) {
+      throw new CategoryNotFoundException(id);
     }
-    throw new CategoryNotFoundException(id);
+
+    return category;
   }
 
   async createCategory(category: CreateCategoryDto): Promise<CategoryEntity> {
-    const newCategory = await this.categoryRepository.create(category);
+    const newCategory = this.categoryRepository.create(category);
     await this.categoryRepository.save(newCategory);
 
     return newCategory;
@@ -52,9 +56,22 @@ export default class CategoryService {
   }
 
   async deleteCategory(id: number): Promise<void> {
-    const deleteResponse = await this.categoryRepository.delete(id);
-    if (!deleteResponse.affected) {
+    const category = await this.categoryRepository.findOne({
+      where: { id },
+      relations: {
+        posts: {
+          categories: true,
+        },
+      },
+    });
+    if (!category) {
       throw new CategoryNotFoundException(id);
     }
+
+    for (const post of category.posts) {
+      post.categories = post.categories.filter((c) => c.id !== id);
+      await this.postsRepository.save(post);
+    }
+    await this.categoryRepository.delete(id);
   }
 }

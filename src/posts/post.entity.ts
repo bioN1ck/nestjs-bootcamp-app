@@ -6,7 +6,6 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-// import { Transform } from 'class-transformer';
 
 import UserEntity from '../users/user.entity';
 import CategoryEntity from '../categories/category.entity';
@@ -21,15 +20,6 @@ class PostEntity {
 
   @Column()
   public content: string;
-
-  @Column({ nullable: true })
-  // Small hack to exclude nullable property from get-requests
-  // @Transform(({ value }) => {
-  //   if (value !== null) {
-  //     return value;
-  //   }
-  // })
-  public category?: string;
 
   @ManyToOne(() => UserEntity, (user: UserEntity) => user.posts)
   public author: UserEntity;
