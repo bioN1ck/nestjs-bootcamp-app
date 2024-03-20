@@ -59,20 +59,22 @@ export default class PostsService {
       author: user,
     });
     await this.postsRepository.save(newPost);
-    this.postsSearchService.indexPost(newPost);
+    await this.postsSearchService.indexPost(newPost);
 
     return newPost;
   }
 
   async searchPosts(text: string): Promise<PostEntity[]> {
     const result = await this.postsSearchService.search(text);
-    const ids = result.map((result) => result.id);
+    const ids = result.map((r) => r.id);
     if (!ids.length) {
       return [];
     }
 
     return this.postsRepository.find({
-      where: { id: In(ids) },
+      where: {
+        id: In(ids),
+      },
       relations: {
         author: true,
         categories: true,
