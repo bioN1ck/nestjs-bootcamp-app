@@ -36,11 +36,17 @@ services:
 #    env_file:
 #      - docker.env
 
-  s3server:
-    container_name: s3server
-    image: scality/s3server
+  minio:
+    container_name: minio01
+    image: minio/minio
+    volumes:
+      - ./data/minio:/data
     ports:
-      - "8000:8000"
+      - "9000:9000"  # Port for API
+      - "9001:9001"  # Port for WebUI
+    env_file:
+      - docker.env
+    command: server /data --console-address ":9001"
 
   es01:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2

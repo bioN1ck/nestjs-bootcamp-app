@@ -99,10 +99,11 @@ export class UsersService {
 
   async getPrivateFile(userId: number, fileId: number) {
     const file = await this.filesService.getPrivateFile(fileId);
-    if (file.info.owner.id === userId) {
-      return file;
+    if (file.info.owner.id !== userId) {
+      throw new UnauthorizedException();
     }
-    throw new UnauthorizedException();
+
+    return file;
   }
 
   async getAllPrivateFiles(userId: number) {
@@ -110,31 +111,33 @@ export class UsersService {
       where: { id: userId },
       relations: { files: true },
     });
-    if (userWithFiles) {
-      return Promise.all(
-        userWithFiles.files.map(async (file) => {
-          const url = await this.filesService.generatePreSignedUrl(file.key);
-
-          return { ...file, url };
-        }),
-      );
+    if (!userWithFiles) {
+      throw new NotFoundException('User with this ID does not exist');
     }
-    throw new NotFoundException('User with this ID does not exist');
+
+    return Promise.all(
+      userWithFiles.files.map(async (file) => {
+        const url = await this.filesService.generatePreSignedUrl(file.key);
+
+        return { ...file, url };
+      }),
+    );
   }
 
   async getByEmail(email: string): Promise<UserEntity> {
     const user = await this.usersRepository.findOne({ where: { email } });
-    if (user) {
-      return user;
+    if (!user) {
+      throw new HttpException(
+        'User with this email does not exist',
+        HttpStatus.NOT_FOUND,
+      );
     }
-    throw new HttpException(
-      'User with this email does not exist',
-      HttpStatus.NOT_FOUND,
-    );
+
+    return user;
   }
 
   async create(userData: CreateUserDto): Promise<UserEntity> {
-    const newUser = await this.usersRepository.create(userData);
+    const newUser = this.usersRepository.create(userData);
     await this.usersRepository.save(newUser);
 
     return newUser;
