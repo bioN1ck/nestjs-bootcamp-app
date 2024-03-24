@@ -3,86 +3,64 @@
 
 import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
-import { S3 } from 'aws-sdk';
 
 import PublicFileEntity from './public-file.entity';
 import PrivateFileEntity from './private-file.entity';
+import { AwsService } from './aws.service';
 
 @Injectable()
 export class FilesService implements OnModuleInit {
   constructor(
-    private readonly configService: ConfigService,
+    private readonly awsService: AwsService,
     @InjectRepository(PublicFileEntity)
     private readonly publicFileRepository: Repository<PublicFileEntity>,
     @InjectRepository(PrivateFileEntity)
     private readonly privateFileRepository: Repository<PrivateFileEntity>,
   ) {}
-
-  onModuleInit(): any {
-    const publicBucket = this.configService.get('S3_PUBLIC_BUCKET_NAME');
-    this.checkAndCreateBucket(publicBucket).then();
-    const privateBucket = this.configService.get('S3_PRIVATE_BUCKET_NAME');
-    this.checkAndCreateBucket(privateBucket).then();
+  async onModuleInit() {
+    await this.checkAndCreateBucket(this.awsService.publicBucketName);
+    await this.checkAndCreateBucket(this.awsService.privateBucketName);
   }
 
   private async checkAndCreateBucket(bucket: string): Promise<void> {
-    const s3 = this.createS3Instance();
     try {
-      await s3.headBucket({ Bucket: bucket }).promise();
+      await this.awsService.headBucket(bucket);
     } catch (err) {
       if (err.code === 'NotFound') {
-        await s3.createBucket({ Bucket: bucket }).promise();
+        await this.awsService.createBucket(bucket);
       }
     }
   }
 
-  private createS3Instance(): S3 {
-    return new S3({
-      endpoint: this.configService.get('S3_ENDPOINT'),
-      s3ForcePathStyle: true,
-    });
-  }
+  public async uploadPublicFile(
+    file: Express.Multer.File,
+  ): Promise<PublicFileEntity> {
+    const { buffer, originalname, mimetype } = file;
+    const key = `${uuid()}.${originalname.split('.').pop()}`;
 
-  public async uploadPublicFile({
-    buffer,
-    filename,
-    mimetype,
-  }: Express.Multer.File): Promise<PublicFileEntity> {
-    const s3 = this.createS3Instance();
-    const extension = filename.split('.').reverse()[0];
-    const uploadResult = await s3
-      .upload({
-        ACL: 'public-read',
-        Bucket: this.configService.get('S3_PUBLIC_BUCKET_NAME'),
-        Body: buffer,
-        Key: `${uuid()}.${extension}`,
-        ContentType: mimetype,
-      })
-      .promise();
-
-    const newFile = this.publicFileRepository.create({
-      key: uploadResult.Key,
-      url: uploadResult.Location,
+    await this.awsService.uploadFile({
+      ACL: 'public-read',
+      Bucket: this.awsService.publicBucketName,
+      Body: buffer,
+      ContentType: mimetype,
+      Key: key,
     });
+
+    const url = this.awsService.generateFileUrl(key);
+    const newFile = this.publicFileRepository.create({ key, url });
     await this.publicFileRepository.save(newFile);
 
     return newFile;
   }
 
   public async deletePublicFile(fileId: number) {
-    const file = await this.publicFileRepository.findOne({
-      where: { id: fileId },
+    const file = await this.publicFileRepository.findOneBy({ id: fileId });
+    await this.awsService.deleteFile({
+      Bucket: this.awsService.publicBucketName,
+      Key: file.key,
     });
-    const s3 = this.createS3Instance();
-    await s3
-      .deleteObject({
-        Bucket: this.configService.get('S3_PUBLIC_BUCKET_NAME'),
-        Key: file.key,
-      })
-      .promise();
     await this.publicFileRepository.delete(fileId);
   }
 
@@ -91,21 +69,17 @@ export class FilesService implements OnModuleInit {
     ownerId: number,
     filename: string,
   ): Promise<PrivateFileEntity> {
-    const s3 = this.createS3Instance();
-    const extension = filename.split('.').reverse()[0];
-    const uploadResult = await s3
-      .upload({
-        Bucket: this.configService.get('S3_PRIVATE_BUCKET_NAME'),
-        Body: dataBuffer,
-        Key: `${uuid()}.${extension}`,
-      })
-      .promise();
+    const key = `${uuid()}.${filename.split('.').pop()}`;
+
+    await this.awsService.uploadFile({
+      Bucket: this.awsService.privateBucketName,
+      Body: dataBuffer,
+      Key: key,
+    });
 
     const newFile = this.privateFileRepository.create({
-      key: uploadResult.Key,
-      owner: {
-        id: ownerId,
-      },
+      key,
+      owner: { id: ownerId },
     });
     await this.privateFileRepository.save(newFile);
 
@@ -113,36 +87,27 @@ export class FilesService implements OnModuleInit {
   }
 
   public async getPrivateFile(fileId: number) {
-    const s3 = this.createS3Instance();
     const fileInfo = await this.privateFileRepository.findOne({
       where: { id: fileId },
       relations: { owner: true },
     });
-    if (fileInfo) {
-      // Thanks to working directly with streams, we don’t have to download the file into the memory in our server.
-      const stream = s3
-        .getObject({
-          Bucket: this.configService.get('S3_PRIVATE_BUCKET_NAME'),
-          Key: fileInfo.key,
-        })
-        .createReadStream();
 
-      return {
-        stream,
-        info: fileInfo,
-      };
+    if (!fileInfo) {
+      throw new NotFoundException(`File with ID ${fileId} not found`);
     }
-    throw new NotFoundException();
+
+    const stream = await this.awsService.getFileStream({
+      Bucket: this.awsService.privateBucketName,
+      Key: fileInfo.key,
+    });
+
+    return {
+      stream,
+      info: fileInfo,
+    };
   }
 
-  public generatePreSignedUrl(key: string) {
-    const s3 = this.createS3Instance();
-
-    // The default expiration time of a pre-signed URL is 15 minutes.
-    // We could change it by adding an Expires parameter.
-    return s3.getSignedUrlPromise('getObject', {
-      Bucket: this.configService.get('S3_PRIVATE_BUCKET_NAME'),
-      Key: key,
-    });
+  public async generatePreSignedUrl(key: string): Promise<string> {
+    return this.awsService.generatePreSignedUrl(key);
   }
 }
