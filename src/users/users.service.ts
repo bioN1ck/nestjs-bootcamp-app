@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
 import UserEntity from './user.entity';
@@ -64,32 +64,43 @@ export class UsersService {
     userId: number,
     file: Express.Multer.File,
   ): Promise<PublicFileEntity> {
-    const user = await this.getById(userId);
-    if (user.avatar) {
-      await this.deleteExistingAvatar(user);
-    }
-    const avatar = await this.filesService.uploadPublicFile(file);
-    await this.usersRepository.update(userId, {
-      ...user,
-      avatar,
-    });
+    return this.usersRepository.manager.transaction(async (manager) => {
+      const user = await manager.findOneBy(UserEntity, { id: userId });
+      if (!user) {
+        throw new Error('User not found');
+      }
+      if (user.avatar) {
+        await this.deleteExistingAvatar(user, manager);
+      }
 
-    return avatar;
+      const avatar = await this.filesService.uploadPublicFile(file, manager);
+      if (!avatar) {
+        throw new Error('Avatar not found');
+      }
+      await manager.update(UserEntity, userId, { avatar });
+
+      return avatar;
+    });
   }
 
   async deleteAvatar(userId: number): Promise<void> {
-    const user = await this.getById(userId);
-    await this.deleteExistingAvatar(user);
+    await this.usersRepository.manager.transaction(async (manager) => {
+      const user = await manager.findOneBy(UserEntity, { id: userId });
+      if (!user) {
+        throw new Error('User not found');
+      }
+      await this.deleteExistingAvatar(user, manager);
+    });
   }
 
-  async deleteExistingAvatar(user: UserEntity): Promise<void> {
+  async deleteExistingAvatar(
+    user: UserEntity,
+    manager: EntityManager,
+  ): Promise<void> {
     const fileId = user.avatar?.id;
     if (fileId) {
-      await this.usersRepository.update(user.id, {
-        ...user,
-        avatar: null,
-      });
-      await this.filesService.deletePublicFile(fileId);
+      await manager.update(UserEntity, user.id, { avatar: null });
+      await this.filesService.deletePublicFile(fileId, manager);
     }
   }
 

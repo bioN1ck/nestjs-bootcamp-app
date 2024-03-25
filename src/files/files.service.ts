@@ -3,7 +3,7 @@
 
 import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 
 import PublicFileEntity from './public-file.entity';
@@ -14,8 +14,6 @@ import { AwsService } from './aws.service';
 export class FilesService implements OnModuleInit {
   constructor(
     private readonly awsService: AwsService,
-    @InjectRepository(PublicFileEntity)
-    private readonly publicFileRepository: Repository<PublicFileEntity>,
     @InjectRepository(PrivateFileEntity)
     private readonly privateFileRepository: Repository<PrivateFileEntity>,
   ) {}
@@ -36,6 +34,7 @@ export class FilesService implements OnModuleInit {
 
   public async uploadPublicFile(
     file: Express.Multer.File,
+    manager: EntityManager,
   ): Promise<PublicFileEntity> {
     const { buffer, originalname, mimetype } = file;
     const key = `${uuid()}.${originalname.split('.').pop()}`;
@@ -49,19 +48,22 @@ export class FilesService implements OnModuleInit {
     });
 
     const url = this.awsService.generateFileUrl(key);
-    const newFile = this.publicFileRepository.create({ key, url });
-    await this.publicFileRepository.save(newFile);
+    const newFile = manager.create(PublicFileEntity, { key, url });
+    await manager.save(PublicFileEntity, newFile);
 
     return newFile;
   }
 
-  public async deletePublicFile(fileId: number) {
-    const file = await this.publicFileRepository.findOneBy({ id: fileId });
+  public async deletePublicFile(fileId: number, manager: EntityManager) {
+    const file = await manager.findOneBy(PublicFileEntity, { id: fileId });
+    if (!file) {
+      throw new Error('File not found');
+    }
     await this.awsService.deleteFile({
       Bucket: this.awsService.publicBucketName,
       Key: file.key,
     });
-    await this.publicFileRepository.delete(fileId);
+    await manager.delete(PublicFileEntity, fileId);
   }
 
   public async uploadPrivateFile(
