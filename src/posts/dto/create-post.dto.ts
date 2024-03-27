@@ -1,9 +1,9 @@
 import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 class CreatePostDto {
-  @IsString()
+  @IsString({ each: true })
   @IsNotEmpty()
-  public content: string;
+  public paragraphs: string[];
 
   @IsString()
   @IsNotEmpty()
