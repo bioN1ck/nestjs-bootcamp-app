@@ -18,7 +18,7 @@ export default class PostsSearchService {
       document: {
         id: post.id,
         title: post.title,
-        content: post.content,
+        content: post.paragraphs.reduce((acc, cur) => `${acc} ${cur}`, ''),
         authorId: post.author.id,
       },
     });

@@ -46,7 +46,7 @@ export default class PostsService {
   }
 
   async createPost(
-    { title, content, categoryIds = [] }: CreatePostDto,
+    { title, paragraphs, categoryIds = [] }: CreatePostDto,
     user: UserEntity,
   ): Promise<PostEntity> {
     const categories = await this.categoriesRepository.findBy({
@@ -54,7 +54,7 @@ export default class PostsService {
     });
     const newPost = this.postsRepository.create({
       title,
-      content,
+      paragraphs,
       categories,
       author: user,
     });
