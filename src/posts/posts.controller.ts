@@ -17,18 +17,23 @@ import UpdatePostDto from './dto/update-post.dto';
 import JwtAuthGuard from '../auth/guards/jwt-auth.guard';
 import FindOneParams from '../utils/find-one-params';
 import RequestWithUser from '../auth/interfaces/request-with-user.interface';
+import PaginationParams from '../utils/types/pagination-params';
+import PostsResponseDto from './dto/posts-response.dto';
 
 @Controller('posts')
 export default class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get()
-  getPosts(@Query('search') search: string) {
+  getPosts(
+    @Query('search') search: string,
+    @Query() { offset, limit, startId }: PaginationParams,
+  ): Promise<PostsResponseDto> {
     if (search) {
-      return this.postsService.searchPosts(search);
+      return this.postsService.searchPosts(search, offset, limit, startId);
     }
 
-    return this.postsService.getAllPosts();
+    return this.postsService.getAllPosts(offset, limit, startId);
   }
 
   @Get(':id')

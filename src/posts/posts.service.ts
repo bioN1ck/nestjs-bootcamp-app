@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, FindManyOptions, MoreThan } from 'typeorm';
 
 import CategoryEntity from '../categories/category.entity';
 import CreatePostDto from './dto/create-post.dto';
@@ -9,6 +9,7 @@ import { PostNotFoundException } from './exception/post-not-found.exception';
 import PostsSearchService from './posts-search.service';
 import UpdatePostDto from './dto/update-post.dto';
 import UserEntity from '../users/user.entity';
+import PostsResponseDto from './dto/posts-response.dto';
 
 @Injectable()
 export default class PostsService {
@@ -20,14 +21,32 @@ export default class PostsService {
     private readonly postsSearchService: PostsSearchService,
   ) {}
 
-  getAllPosts(): Promise<PostEntity[]> {
-    // This return a list of the posts with the authors and categories
-    return this.postsRepository.find({
-      relations: {
-        author: true,
-        categories: true,
-      },
+  async getAllPosts(
+    offset?: number, // Use for offset-pagination
+    limit?: number,
+    startId?: number, // Use for keyset-pagination
+  ): Promise<PostsResponseDto> {
+    const where: FindManyOptions<PostEntity>['where'] = {};
+    let separateCount = 0;
+    let skip = offset;
+    if (startId) {
+      where.id = MoreThan(startId);
+      skip = 0; // Priority of keyset over offset pagination.
+      separateCount = await this.postsRepository.count();
+    }
+
+    const [items, count] = await this.postsRepository.findAndCount({
+      where,
+      relations: { author: true, categories: true },
+      order: { id: 'ASC' },
+      skip,
+      take: limit,
     });
+
+    return {
+      items,
+      count: startId ? separateCount : count,
+    };
   }
 
   async getPostById(id: number): Promise<PostEntity> {
@@ -64,22 +83,36 @@ export default class PostsService {
     return newPost;
   }
 
-  async searchPosts(text: string): Promise<PostEntity[]> {
-    const result = await this.postsSearchService.search(text);
-    const ids = result.map((r) => r.id);
+  async searchPosts(
+    text: string,
+    offset?: number, // Use for offset-pagination
+    limit?: number,
+    startId?: number, // Use for keyset-pagination
+  ): Promise<PostsResponseDto> {
+    const { results, count } = await this.postsSearchService.search(
+      text,
+      offset,
+      limit,
+      startId,
+    );
+    const ids = results.map((r) => r.id);
     if (!ids.length) {
-      return [];
+      return {
+        items: [],
+        count: 0,
+      };
     }
 
-    return this.postsRepository.find({
-      where: {
-        id: In(ids),
-      },
-      relations: {
-        author: true,
-        categories: true,
-      },
+    const posts = await this.postsRepository.find({
+      where: { id: In(ids) },
+      relations: { author: true, categories: true },
+      order: { id: 'ASC' },
     });
+
+    return {
+      items: posts,
+      count,
+    };
   }
 
   async updatePost(id: number, post: UpdatePostDto): Promise<PostEntity> {
