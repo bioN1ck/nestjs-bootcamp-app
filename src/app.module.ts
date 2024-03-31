@@ -12,6 +12,7 @@ import { UsersModule } from './users/users.module';
 import { ExceptionsLoggerFilter } from './utils/exceptions-logger.filter';
 import { CategoryModule } from './categories/category.module';
 import { SearchModule } from './search/search.module';
+import { SubscribersModule } from './subscribers/subscribers.module';
 
 @Module({
   imports: [
@@ -36,11 +37,14 @@ import { SearchModule } from './search/search.module';
         S3_SECRET_ACCESS_KEY: Joi.string().required(),
         S3_PUBLIC_BUCKET_NAME: Joi.string().required(),
         S3_PRIVATE_BUCKET_NAME: Joi.string().required(),
+        SUBSCRIBERS_SERVICE_HOST: Joi.string().required(),
+        SUBSCRIBERS_SERVICE_PORT: Joi.string().required(),
       }),
     }),
     DatabaseModule,
     PostsModule,
     SearchModule,
+    SubscribersModule,
     UsersModule,
   ],
   controllers: [AppController],
