@@ -4,7 +4,7 @@ services:
     container_name: pg1
     image: postgres:latest
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - ./data/postgres:/data/postgres
     env_file:
@@ -120,6 +120,18 @@ services:
       - "5601:5601"
     networks:
       - elastic
+
+  rabbitmq:
+    image: rabbitmq:3.13.0-management
+    container_name: rmq1
+    hostname: rabbitmq
+    volumes:
+      - /var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - ./rabbitmq.env
 
 networks:
   postgres:
