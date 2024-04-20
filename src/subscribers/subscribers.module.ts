@@ -3,27 +3,21 @@ import { ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { Module } from '@nestjs/common';
 
 import { SubscribersController } from './subscribers.controller';
+import { join } from 'path';
 
 @Module({
   imports: [ConfigModule],
   controllers: [SubscribersController],
   providers: [
     {
-      provide: 'SUBSCRIBERS_SERVICE',
+      provide: 'SUBSCRIBERS_PACKAGE',
       useFactory: (configService: ConfigService) => {
-        const user = configService.get('RABBITMQ_USER');
-        const pass = configService.get('RABBITMQ_PASSWORD');
-        const host = configService.get('RABBITMQ_HOST');
-        const queueName = configService.get('RABBITMQ_QUEUE_NAME');
-
         return ClientProxyFactory.create({
-          transport: Transport.RMQ,
+          transport: Transport.GRPC,
           options: {
-            urls: [`amqp://${user}:${pass}@${host}`],
-            queue: queueName,
-            queueOptions: {
-              durable: true,
-            },
+            package: 'subscribers',
+            protoPath: join(process.cwd(), 'src/subscribers/subscribers.proto'),
+            url: configService.get('GRPC_CONNECTION_URL'),
           },
         });
       },
