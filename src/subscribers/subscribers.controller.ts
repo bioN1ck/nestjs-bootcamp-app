@@ -4,64 +4,40 @@ import {
   Controller,
   Get,
   Inject,
+  OnModuleInit,
   Post,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientGrpc } from '@nestjs/microservices';
 
 import JwtAuthGuard from '../auth/guards/jwt-auth.guard';
 import CreateSubscriberDto from './dto/create-subscriber.dto';
+import SubscribersService from './interfaces/subscribers-service.interface';
 
 @Controller('subscribers')
 @UseInterceptors(ClassSerializerInterceptor)
-export class SubscribersController {
+export class SubscribersController implements OnModuleInit {
+  private subscribersService: SubscribersService;
+
   constructor(
-    @Inject('SUBSCRIBERS_SERVICE')
-    private readonly subscribersService: ClientProxy,
+    @Inject('SUBSCRIBERS_PACKAGE')
+    private readonly client: ClientGrpc,
   ) {}
 
-  @Get('message')
-  @UseGuards(JwtAuthGuard)
-  async getMessageBasedSubscribers() {
-    return this.subscribersService.send(
-      {
-        cmd: 'get-message-based-subscribers',
-      },
-      '',
-    );
+  onModuleInit(): void {
+    this.subscribersService =
+      this.client.getService<SubscribersService>('SubscribersService');
   }
 
-  @Post('message')
-  @UseGuards(JwtAuthGuard)
-  async createMessageBasedPost(@Body() subscriberDto: CreateSubscriberDto) {
-    return this.subscribersService.send(
-      {
-        cmd: 'add-message-based-subscriber',
-      },
-      subscriberDto,
-    );
+  @Get()
+  async getSubscribers() {
+    return this.subscribersService.getAllSubscribers({});
   }
 
-  @Get('event')
+  @Post()
   @UseGuards(JwtAuthGuard)
-  async getEventBasedSubscribers() {
-    return this.subscribersService.send(
-      {
-        cmd: 'get-event-based-subscribers',
-      },
-      '',
-    );
-  }
-
-  @Post('event')
-  @UseGuards(JwtAuthGuard)
-  async createEventBasedPost(@Body() subscriberDto: CreateSubscriberDto) {
-    return this.subscribersService.emit(
-      {
-        cmd: 'add-event-based-subscriber',
-      },
-      subscriberDto,
-    );
+  async createPost(@Body() subscriberDto: CreateSubscriberDto) {
+    return this.subscribersService.addSubscriber(subscriberDto);
   }
 }
