@@ -32,7 +32,10 @@ export class SubscribersController implements OnModuleInit {
 
   @Get()
   async getSubscribers() {
-    return this.subscribersService.getAllSubscribers({});
+    console.log('Received request for getSubscribers');
+    const response = await this.subscribersService.getAllSubscribers({});
+    console.log('Response from gRPC service:', response);
+    return response;
   }
 
   @Post()
