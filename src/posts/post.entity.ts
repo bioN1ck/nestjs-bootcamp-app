@@ -4,8 +4,9 @@ import {
   Index,
   JoinTable,
   ManyToMany,
-  ManyToOne, OneToMany,
-  PrimaryGeneratedColumn
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 
 import UserEntity from '../users/user.entity';
