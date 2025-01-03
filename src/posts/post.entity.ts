@@ -5,11 +5,13 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 import UserEntity from '../users/user.entity';
 import CategoryEntity from '../categories/category.entity';
+import { CommentEntity } from '../comments/entities';
 
 @Entity('post')
 class PostEntity {
@@ -34,6 +36,9 @@ class PostEntity {
   )
   @JoinTable() // Only on one side needed
   public categories: CategoryEntity[];
+
+  @OneToMany(() => CommentEntity, (comment: CommentEntity) => comment.post)
+  public comments: CommentEntity[];
 }
 
 export default PostEntity;

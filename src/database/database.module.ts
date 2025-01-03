@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import AddressEntity from '../users/address.entity';
 
 @Module({
   imports: [
@@ -15,7 +14,6 @@ import AddressEntity from '../users/address.entity';
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DB'),
-        entities: [AddressEntity],
         autoLoadEntities: true,
         synchronize: true,
       }),

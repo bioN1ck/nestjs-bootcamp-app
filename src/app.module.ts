@@ -3,21 +3,21 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import * as Joi from 'joi';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
-import { PostsModule } from './posts/posts.module';
-import { UsersModule } from './users/users.module';
-import { ExceptionsLoggerFilter } from './utils/exceptions-logger.filter';
 import { CategoryModule } from './categories/category.module';
+import { CommentsModule } from './comments/comments.module';
+import { DatabaseModule } from './database/database.module';
+import { ExceptionsLoggerFilter } from './utils/exceptions-logger.filter';
+import { PostsModule } from './posts/posts.module';
 import { SearchModule } from './search/search.module';
 import { SubscribersModule } from './subscribers/subscribers.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
     AuthModule,
     CategoryModule,
+    CommentsModule,
     ConfigModule.forRoot({
       validationSchema: Joi.object({
         POSTGRES_HOST: Joi.string().required(),
@@ -49,9 +49,7 @@ import { SubscribersModule } from './subscribers/subscribers.module';
     SubscribersModule,
     UsersModule,
   ],
-  controllers: [AppController],
   providers: [
-    AppService,
     {
       provide: APP_FILTER,
       useClass: ExceptionsLoggerFilter,
