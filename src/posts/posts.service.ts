@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, FindManyOptions, MoreThan } from 'typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 import CategoryEntity from '../categories/category.entity';
 import CreatePostDto from './dto/create-post.dto';
@@ -10,10 +12,13 @@ import PostsSearchService from './posts-search.service';
 import UpdatePostDto from './dto/update-post.dto';
 import UserEntity from '../users/user.entity';
 import PostsResponseDto from './dto/posts-response.dto';
+import { GET_POSTS_CACHE_KEY } from './posts-cache-key.constant';
 
 @Injectable()
 export default class PostsService {
   constructor(
+    @Inject(CACHE_MANAGER)
+    private readonly _cacheManager: Cache,
     @InjectRepository(PostEntity)
     private readonly postsRepository: Repository<PostEntity>,
     @InjectRepository(CategoryEntity)
@@ -64,6 +69,18 @@ export default class PostsService {
     return post;
   }
 
+  async clearCache(): Promise<boolean> {
+    if (!this._cacheManager.store.keys) {
+      return false;
+    }
+
+    for (const key of await this._cacheManager.store.keys()) {
+      if (key.startsWith(GET_POSTS_CACHE_KEY)) {
+        await this._cacheManager.del(key);
+      }
+    }
+  }
+
   async createPost(
     { title, paragraphs, categoryIds = [] }: CreatePostDto,
     user: UserEntity,
@@ -79,6 +96,7 @@ export default class PostsService {
     });
     await this.postsRepository.save(newPost);
     await this.postsSearchService.indexPost(newPost);
+    await this.clearCache();
 
     return newPost;
   }
@@ -129,6 +147,7 @@ export default class PostsService {
       throw new PostNotFoundException(id);
     }
     await this.postsSearchService.update(updatedPost);
+    await this.clearCache();
 
     return updatedPost;
   }
@@ -139,5 +158,6 @@ export default class PostsService {
       throw new PostNotFoundException(id);
     }
     await this.postsSearchService.remove(id);
+    await this.clearCache();
   }
 }

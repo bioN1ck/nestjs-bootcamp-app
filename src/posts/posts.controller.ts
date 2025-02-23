@@ -9,7 +9,9 @@ import {
   Query,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
 import PostsService from './posts.service';
 import CreatePostDto from './dto/create-post.dto';
@@ -19,11 +21,16 @@ import FindOneParams from '../utils/find-one-params';
 import RequestWithUser from '../auth/interfaces/request-with-user.interface';
 import PaginationParams from '../utils/types/pagination-params';
 import PostsResponseDto from './dto/posts-response.dto';
+import { GET_POSTS_CACHE_KEY } from './posts-cache-key.constant';
+import { HttpCacheInterceptor } from './http-cache.interceptor';
 
 @Controller('posts')
 export default class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey(GET_POSTS_CACHE_KEY)
+  @CacheTTL(120_000)
   @Get()
   getPosts(
     @Query('search') search: string,
